@@ -17,9 +17,9 @@ Repositori ini berisi implementasi akselerator perangkat keras *Convolutional Ne
 
 ```text
 CNN-Implementation/
-├── algoritma_cnn/      # Kode Python (PyTorch) untuk pra-pemrosesan, pelatihan model, dan kuantisasi INT8
+├── algoritma_cnn/      # Kode Python dan Jupyter Nitebook untuk pra-pemrosesan, pelatihan model, dan kuantisasi INT8
 ├── dataset/            # Dataset citra kaleng minuman (64x64 grayscale)
-├── output/             # File hasil ekspor bobot & bias terkuantisasi (.hex dan .mif)
+├── output/             # File Laporan
 ├── photos/             # Dokumentasi hasil pelatihan, simulasi Questa, dan sintesis Quartus Prime
 └── verilog/            # Kode sumber Verilog RTL (cnn_top.v, weight_rom.v, mac_unit.v, relu_quant.v, tb_cnn_top.v)
 ```
