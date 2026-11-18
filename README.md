@@ -69,13 +69,13 @@ CNN-Implementation/
 ## Dokumentasi Pengujian
 
 ### 1. Pelatihan Model & Ekspor Bobot INT8 (Google Colab)
-![Hasil Training](photos/1_mapping_kelas.png)
-![Ekspor Bobot INT8](photos/2_ekspor_bobot_int8.png)
+![Hasil Training](photos/1.%20Mapping%20Kelas.png)
+![Ekspor Bobot INT8](photos/2.%20Ekspor%20Bobot%20INT8%20untuk%20FPGA%20BRAM.png)
 
 ### 2. Verifikasi Simulasi RTL (Questa Intel FPGA)
-![Waveform Questa](photos/3_waveform_questa.png)
-![Transkrip Questa](photos/4_transkrip_questa.png)
+![Waveform Questa](photos/3.%20waveform%20questa.png)
+![Transkrip Questa](photos/4.%20Transkrip%20Questa.png)
 
 ### 3. Laporan Sintesis & Timing (Intel Quartus Prime)
-![Flow Summary Quartus](photos/5_flow_summary.png)
-![Fmax Summary Quartus](photos/6_fmax_summary.png)
+![Flow Summary Quartus](photos/5.%20Flow%20Summary.png)
+![Fmax Summary Quartus](photos/6.%20Fmax%20Summary.png)
