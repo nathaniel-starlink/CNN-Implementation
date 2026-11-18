@@ -1,4 +1,4 @@
-# Implementasi Akselerator Perangkat Keras CNN (Modified LeNet-5 INT8) Berbasis Verilog RTL pada FPGA Intel Cyclone V
+# Implementasi CNN Berbasis FPGA untuk Inspeksi Kualitas Kaleng Minuman
 
 **Disusun Oleh:**
 * **Nama:** Thomas Aquinas Nathaniel
