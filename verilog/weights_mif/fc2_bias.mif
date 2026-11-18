@@ -1,0 +1,9 @@
+-- Quantized INT8 Weights for fc2_bias (Scale = 789.670898)
+WIDTH=8;
+DEPTH=2;
+ADDRESS_RADIX=UNS;
+DATA_RADIX=HEX;
+CONTENT BEGIN
+  0 : 81;
+  1 : 40;
+END;

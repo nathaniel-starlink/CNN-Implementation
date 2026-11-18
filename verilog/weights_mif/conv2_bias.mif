@@ -1,0 +1,23 @@
+-- Quantized INT8 Weights for conv2_bias (Scale = 562.559265)
+WIDTH=8;
+DEPTH=16;
+ADDRESS_RADIX=UNS;
+DATA_RADIX=HEX;
+CONTENT BEGIN
+  0 : 4E;
+  1 : DE;
+  2 : D2;
+  3 : CF;
+  4 : 34;
+  5 : D0;
+  6 : 04;
+  7 : BF;
+  8 : 1A;
+  9 : 14;
+  10 : E1;
+  11 : 39;
+  12 : 0D;
+  13 : 0B;
+  14 : EA;
+  15 : 7F;
+END;
