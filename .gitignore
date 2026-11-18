@@ -1,0 +1,20 @@
+# Quartus Prime temporary build files
+verilog/quartus_proj/db/
+verilog/quartus_proj/incremental_db/
+verilog/quartus_proj/simulation/
+*.rpt
+*.done
+*.jdi
+*.pin
+*.sld
+*.summary
+*.smsg
+
+# Questa / ModelSim simulation work files
+verilog/tb/work/
+*.wlf
+transcript
+
+# Python cache
+__pycache__/
+*.pyc
