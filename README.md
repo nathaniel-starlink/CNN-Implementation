@@ -17,7 +17,7 @@ Repositori ini berisi implementasi akselerator perangkat keras *Convolutional Ne
 
 ```text
 CNN-Implementation/
-├── algoritma_cnn/      # Kode Python dan Jupyter Nitebook untuk pra-pemrosesan, pelatihan model, dan kuantisasi INT8
+├── algoritma_cnn/      # Kode Python dan Jupyter Notebook untuk pra-pemrosesan, pelatihan model, dan kuantisasi INT8
 ├── dataset/            # Dataset citra kaleng minuman (64x64 grayscale)
 ├── output/             # File Laporan
 ├── photos/             # Dokumentasi hasil pelatihan, simulasi Questa, dan sintesis Quartus Prime
