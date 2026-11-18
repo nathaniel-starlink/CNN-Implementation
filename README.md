@@ -1,37 +1,81 @@
-# Akselerator CNN (Modified LeNet-5 INT8) pada FPGA Cyclone V untuk Klasifikasi Kualitas Kaleng Minuman
+# Implementasi Akselerator Perangkat Keras CNN (Modified LeNet-5 INT8) Berbasis Verilog RTL pada FPGA Intel Cyclone V
 
-Implementasi *end-to-end* sistem klasifikasi citra berbasis **Convolutional Neural Network (CNN)** untuk mendeteksi kondisi kaleng minuman (**Sempurna** vs **Penyok**) menggunakan arsitektur **Modified LeNet-5** terkuantisasi **INT8** pada **Verilog RTL** dengan target perangkat keras **Intel Cyclone V SX SoC (`5CSXFC6D6F31C6` / Terasic DE10-Standard)**.
+**Disusun Oleh:**
+* **Nama:** Thomas Aquinas Nathaniel
+* **NIM:** 101022330145
+* **Mata Kuliah:** Desain SoC dan FPGA
 
-## Struktur Direktori
-* `dataset/processed_64x64/` — Dataset hasil *cropping* bounding box YOLO resolusi **64×64 piksel Grayscale 8-bit** (`3.121` data latih, `781` data validasi).
-* `algoritma_cnn/` — Skrip pra-pemrosesan (`1_preprocess_crop.py`) serta notebook pelatihan PyTorch dan ekspor bobot INT8 (`train_lenet5_int8.ipynb`).
-* `verilog/rtl/` — Kode sumber Verilog sintetis (`cnn_top.v`, `weight_rom.v`, `mac_unit.v`, `relu_quant.v`).
-* `verilog/weights_mif/` — File memori ROM bobot dan bias INT8 (`.mif` untuk Quartus Prime, `.hex` untuk Questa).
-* `verilog/tb/` — Testbench simulasi fungsional (`tb_cnn_top.v`).
-* `verilog/quartus_proj/` — Proyek sintesis Intel Quartus Prime (`cnn_soda_can.qpf`).
-* `output/` — Dokumentasi hasil pelatihan model, simulasi gelombang RTL, dan laporan sintesis FPGA.
+---
 
-## Ringkasan Hasil Implementasi
-| Parameter | Hasil Pengujian / Sintesis |
-| :--- | :--- |
-| **Akurasi Validasi Model (PyTorch)** | `98.34%` (Epoch 20, 22, 23) |
-| **Target FPGA** | Intel Cyclone V SX SoC (`5CSXFC6D6F31C6`) |
-| **Logic Utilization (ALMs)** | `289 / 41,910 (< 1%)` |
-| **Total Registers** | `385` |
-| **Block Memory Bits (M10K BRAM)** | `589,520 / 5,662,720 (10%)` |
-| **Total DSP Blocks** | `7 / 112 (6%)` |
-| **Frekuensi Kerja Maksimum ($F_{\max}$)** | `139.47 MHz` (Slow 1100mV 85C Model) |
-| **Latensi Inferensi (@ 50 MHz)** | `484.198 clock cycles` (`9,684 ms` / ~103 FPS) |
+## Deskripsi Proyek
 
-## Dokumentasi Hasil
+Repositori ini berisi implementasi akselerator perangkat keras *Convolutional Neural Network* (CNN) berbasis Verilog RTL (*Register-Transfer Level*) untuk klasifikasi kualitas fisik kemasan kaleng minuman (`0_sempurna` dan `1_penyok`). Arsitektur model menggunakan **Modified LeNet-5** dengan masukan citra *grayscale* beresolusi **64×64 piksel** yang dikuantisasi ke format bilangan bulat bertanda **8-bit (`INT8`)** agar seluruh parameter bobot dan *feature map* dapat disimpan secara internal pada blok memori **M10K BRAM** FPGA tanpa membutuhkan memori SDRAM eksternal.
+
+---
+
+## Struktur Repositori
+
+```text
+CNN-Implementation/
+├── algoritma_cnn/      # Kode Python (PyTorch) untuk pra-pemrosesan, pelatihan model, dan kuantisasi INT8
+├── dataset/            # Dataset citra kaleng minuman (64x64 grayscale)
+├── output/             # File hasil ekspor bobot & bias terkuantisasi (.hex dan .mif)
+├── photos/             # Dokumentasi hasil pelatihan, simulasi Questa, dan sintesis Quartus Prime
+└── verilog/            # Kode sumber Verilog RTL (cnn_top.v, weight_rom.v, mac_unit.v, relu_quant.v, tb_cnn_top.v)
+```
+
+---
+
+## Arsitektur Model & Perangkat Keras
+
+### 1. Struktur Lapisan Modified LeNet-5
+| Lapisan | Jenis Operasi | Kernel / Stride | Dimensi Keluaran | Jumlah Parameter |
+| :--- | :--- | :---: | :---: | :---: |
+| **Input** | Citra Grayscale 8-bit | — | `1 × 64 × 64` | 0 |
+| **Conv1 + ReLU** | Konvolusi 2D | `5 × 5`, stride 1 | `8 × 60 × 60` | 208 |
+| **Pool1** | Max Pooling | `2 × 2`, stride 2 | `8 × 30 × 30` | 0 |
+| **Conv2 + ReLU** | Konvolusi 2D | `5 × 5`, stride 1 | `16 × 26 × 26` | 3.216 |
+| **Pool2** | Max Pooling | `2 × 2`, stride 2 | `16 × 13 × 13` | 0 |
+| **Conv3 + ReLU** | Konvolusi 2D | `3 × 3`, stride 1 | `32 × 11 × 11` | 4.640 |
+| **Pool3** | Max Pooling | `2 × 2`, stride 2 | `32 × 5 × 5` | 0 |
+| **Flatten** | Vektorisasi Fitur | — | `800` | 0 |
+| **FC1 + ReLU** | Fully Connected | `800 → 64` | `64` | 51.264 |
+| **FC2 (Output)** | Fully Connected (Logit) | `64 → 2` | `2` | 130 |
+| **Total** | **Keseluruhan Model** | — | **2 Kelas** | **59.458 parameter** |
+
+### 2. Modul Verilog RTL (`verilog/`)
+* **`cnn_top.v`**: Modul tingkat atas yang mengintegrasikan penyangga citra masukan (`4.096 byte`), penyangga *feature map* sinkron (M10K BRAM), serta pengendali *Finite State Machine* (FSM) 13 *state*.
+* **`weight_rom.v`**: Modul ROM berparameter untuk menyimpan bobot dan bias setiap lapisan pada blok M10K BRAM dengan latensi pembacaan 1 siklus *clock*.
+* **`mac_unit.v`**: Unit aritmetika *Multiply-Accumulate* bertanda `8-bit × 8-bit` dengan akumulator `32-bit` yang diinferensikan menjadi *Variable-Precision DSP Block*.
+* **`relu_quant.v`**: Unit aktivasi ReLU dan re-kuantisasi dari `32-bit` ke `8-bit` bertanda menggunakan pergeseran kanan aritmetika (`>>> 7`) serta saturasi `[-128, 127]`.
+* **`tb_cnn_top.v`**: *Testbench* verifikasi fungsional RTL pada frekuensi *clock* 50 MHz.
+
+---
+
+## Ringkasan Hasil Pengujian & Sintesis
+
+| Metrik Evaluasi | Hasil | Keterangan |
+| :--- | :---: | :--- |
+| **Akurasi Validasi Model** | **98,34%** | Tercapai pada epoch ke-20, 22, dan 23 |
+| **Latensi Inferensi RTL** | **484.198 siklus** | `9,684 ms` @ 50 MHz (`±103,26 FPS`) |
+| **Logic Utilization (ALMs)** | **289 / 41.910** | `< 1%` kapasitas chip |
+| **Total Registers** | **385** | Efisiensi register tinggi |
+| **Block Memory Bits (M10K)** | **589.520 / 5.662.720 bit** | `10%` kapasitas BRAM |
+| **Total DSP Blocks** | **7 / 112** | `6%` kapasitas DSP |
+| **Frekuensi Maksimum ($F_{\max}$)** | **139,47 MHz** | Memenuhi target `50,00 MHz` (*Slow 1100mV 85C*) |
+
+---
+
+## Dokumentasi Pengujian
+
 ### 1. Pelatihan Model & Ekspor Bobot INT8 (Google Colab)
-![Hasil Training](output/1_mapping_kelas.png)
-![Ekspor Bobot INT8](output/2_ekspor_bobot_int8.png)
+![Hasil Training](photos/1_mapping_kelas.png)
+![Ekspor Bobot INT8](photos/2_ekspor_bobot_int8.png)
 
 ### 2. Verifikasi Simulasi RTL (Questa Intel FPGA)
-![Waveform Questa](output/3_waveform_questa.png)
-![Transkrip Questa](output/4_transkrip_questa.png)
+![Waveform Questa](photos/3_waveform_questa.png)
+![Transkrip Questa](photos/4_transkrip_questa.png)
 
 ### 3. Laporan Sintesis & Timing (Intel Quartus Prime)
-![Flow Summary Quartus](output/5_flow_summary.png)
-![Fmax Summary Quartus](output/6_fmax_summary.png)
+![Flow Summary Quartus](photos/5_flow_summary.png)
+![Fmax Summary Quartus](photos/6_fmax_summary.png)
